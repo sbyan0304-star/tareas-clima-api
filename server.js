@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const express = require("express");
 const helmet = require("helmet");
 const morgan = require("morgan");
@@ -6,12 +7,12 @@ const morgan = require("morgan");
 const { body, validationResult } = require("express-validator");
 
 const app = express();
+
+// ===============================
+// MIDDLEWARES
+// ===============================
+
 app.use(express.json());
-const tareasRouter = require("./routes/tareas");
-app.use("/api/tareas", tareasRouter);
-// ===============================
-// MIDDLEWARES DE SEGURIDAD
-// ===============================
 
 app.use(helmet());
 // Helmet agrega cabeceras HTTP
@@ -19,6 +20,17 @@ app.use(helmet());
 // clickjacking y MIME sniffing.
 
 app.use(morgan("dev"));
+
+// ===============================
+// RUTAS PROPIAS
+// ===============================
+
+const tareasRouter = require("./routes/tareas");
+const climaRouter = require("./routes/clima");
+
+app.use("/api/tareas", tareasRouter);
+
+app.use("/api/clima", climaRouter);
 
 // ===============================
 // ENDPOINT SALUD
