@@ -1,153 +1,89 @@
-require('dotenv').config();
+require("dotenv").config();
+const express = require("express");
+const helmet = require("helmet");
+const morgan = require("morgan");
 
-const express = require('express');
-const helmet = require('helmet');
-const morgan = require('morgan');
-
-const {
-    body,
-    validationResult
-} = require('express-validator');
-
+const { body, validationResult } = require("express-validator");
 
 const app = express();
-
-
+app.use(express.json());
+const tareasRouter = require("./routes/tareas");
+app.use("/api/tareas", tareasRouter);
 // ===============================
 // MIDDLEWARES DE SEGURIDAD
 // ===============================
 
-app.use(
-    helmet()
-);
+app.use(helmet());
 // Helmet agrega cabeceras HTTP
 // para reducir ataques como XSS,
 // clickjacking y MIME sniffing.
 
-
-app.use(
-    express.json()
-);
-
-
-app.use(
-    morgan('dev')
-);
-
-
+app.use(morgan("dev"));
 
 // ===============================
 // ENDPOINT SALUD
 // ===============================
 
-app.get('/api/salud',(req,res)=>{
-
-    res.json({
-        status:"Servidor funcionando",
-        seguridad:true
-    });
-
+app.get("/api/salud", (req, res) => {
+  res.json({
+    status: "Servidor funcionando",
+    seguridad: true,
+  });
 });
-
-
-
 
 // ===============================
 // ENDPOINT ECHO
 // ===============================
 
 app.post(
-    '/api/echo',
+  "/api/echo",
 
-    body('mensaje')
+  body("mensaje")
     .isString()
     .trim()
     .isLength({
-        min:1,
-        max:200
+      min: 1,
+      max: 200,
     })
     .escape(),
 
+  (req, res) => {
+    const errores = validationResult(req);
 
-(req,res)=>{
-
-
-    const errores =
-    validationResult(req);
-
-
-    if(!errores.isEmpty()){
-
-        return res.status(400).json({
-            errores:errores.array()
-        });
-
+    if (!errores.isEmpty()) {
+      return res.status(400).json({
+        errores: errores.array(),
+      });
     }
 
-
     res.json({
-
-        recibido:req.body.mensaje
-
+      recibido: req.body.mensaje,
     });
-
-
-});
-
-
-
+  },
+);
 
 // ===============================
 // RETO
 // REGISTRO DE USUARIO
 // ===============================
 
-
 app.post(
+  "/api/registro",
 
-'/api/registro',
+  [
+    body("nombre").trim().notEmpty().withMessage("El nombre es obligatorio"),
 
+    body("correo").trim().isEmail().withMessage("Correo inválido"),
+  ],
 
-[
-    body('nombre')
-    .trim()
-    .notEmpty()
-    .withMessage(
-        "El nombre es obligatorio"
-    ),
+  (req, res) => {
+    const errores = validationResult(req);
 
-
-    body('correo')
-    .trim()
-    .isEmail()
-    .withMessage(
-        "Correo inválido"
-    )
-],
-
-
-
-(req,res)=>{
-
-
-    const errores =
-    validationResult(req);
-
-
-
-    if(!errores.isEmpty()){
-
-
-        return res.status(400)
-        .json({
-
-            errores:errores.array()
-
-        });
-
+    if (!errores.isEmpty()) {
+      return res.status(400).json({
+        errores: errores.array(),
+      });
     }
-
-
 
     /*
     PRINCIPIO DE CODIFICACIÓN SEGURA:
@@ -159,20 +95,12 @@ app.post(
     a la lógica del sistema.
     */
 
-
     res.json({
+      mensaje: "Registro válido",
 
-        mensaje:
-        "Registro válido",
-
-        usuario:req.body
-
+      usuario: req.body,
     });
-
-
-
-});
-
-
+  },
+);
 
 module.exports = app;
