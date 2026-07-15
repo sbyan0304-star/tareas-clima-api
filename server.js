@@ -25,12 +25,17 @@ app.use(morgan("dev"));
 // RUTAS PROPIAS
 // ===============================
 
-const tareasRouter = require("./routes/tareas");
-const climaRouter = require("./routes/clima");
+const verificarToken = require('./middleware/auth');
 
-app.use("/api/tareas", tareasRouter);
+const tareasRouter = require('./routes/tareas');
+app.use('/api/tareas', verificarToken, tareasRouter);  // protegida
 
-app.use("/api/clima", climaRouter);
+const climaRouter = require('./routes/clima');
+app.use('/api/clima', verificarToken, climaRouter);    // protegida
+
+const authRouter = require('./routes/auth');
+app.use('/api/auth', authRouter);           // pública: registro y login
+
 
 // ===============================
 // ENDPOINT SALUD
@@ -114,5 +119,7 @@ app.post(
     });
   },
 );
+
+
 
 module.exports = app;
